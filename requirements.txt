@@ -15,8 +15,6 @@ httpx==0.28.1
 idna==3.10
 Jinja2==3.1.5
 jiter==0.8.2
-## !! Could not determine repository location
--e /home/joseph/llmdy
 markdown-it-py==3.0.0
 MarkupSafe==3.0.2
 maturin==1.8.2
