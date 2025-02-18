@@ -1,0 +1,10 @@
+.venv
+*.pyc
+*.so
+__pycache__
+llmdy/*.md
+.env
+
+# Added by cargo
+
+/target
