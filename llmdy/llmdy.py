@@ -40,7 +40,7 @@ def main():
         help="The URL to obtain the text from and convert it into markdown.",
     )
     parser.add_argument(
-        "--out", help="The file to output", required=False, default="out.md"
+        "--out", "-o", help="The file to output", required=False, default="out.md"
     )
     args = Arguments.parse(parser.parse_args())
 
