@@ -28,7 +28,7 @@ fn clean_html(html: &str, clean_svg: bool, clean_base64: bool) -> String {
         let attrs: Vec<&str> = binding.iter().map(|(key, _)| key.as_str()).collect();
 
         attrs.iter().for_each(|&attr| match attr {
-            "src" | "alt" => {}
+            "src" | "alt" | "srcset" => {}
             _ => el.remove_attribute(attr),
         });
 
