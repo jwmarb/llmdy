@@ -13,3 +13,4 @@ futures-io = "0.3.31"
 pyo3 = "0.23.3"
 regex = "1.11.1"
 reqwest = { version = "0.12.12", features = ["blocking"] }
+visdom = { version = "1.0.2", features = ["destroy"] }

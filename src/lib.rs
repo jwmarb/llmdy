@@ -1,20 +1,8 @@
 use pyo3::prelude::*;
 use regex::Regex;
 
-const SCRIPT_PATTERN: &str = r"<[ ]*script.*?\/[ ]*script[ ]*>";
-const STYLE_PATTERN: &str = r"<[ ]*style.*?\/[ ]*style[ ]*>";
-const META_PATTERN: &str = r"<[ ]*meta.*?>";
 const COMMENT_PATTERN: &str = r"<[ ]*!--.*?--[ ]*>";
-const LINK_PATTERN: &str = r"<[ ]*link.*?>";
 const BASE64_IMG_PATTERN: &str = r#"<img[^>]+src="data:image/[^;]+;base64,[^"]+"[^>]*>"#;
-const SVG_PATTERN: &str = r"(<svg[^>]*>)(.*?)(<\/svg>)";
-const BODY_PATTERN: &str = r"<body[^>]*>(.*?)<\/body>";
-
-fn replace_svg(html: &str, new_content: &str) -> String {
-    let re = Regex::new(SVG_PATTERN).unwrap();
-    re.replace_all(html, format!("$1{}$3", new_content))
-        .to_string()
-}
 
 fn replace_base64_images(html: &str, new_image_src: &str) -> String {
     let re = Regex::new(BASE64_IMG_PATTERN).unwrap();
@@ -35,32 +23,43 @@ fn get_html(url: &str) -> String {
 #[pyfunction]
 #[pyo3(signature = (html = "", clean_svg = false, clean_base64 = false))]
 fn clean_html(html: &str, clean_svg: bool, clean_base64: bool) -> String {
+    fn clean_attrs(el: &mut visdom::types::BoxDynElement) -> () {
+        let binding = el.get_attributes();
+        let attrs: Vec<&str> = binding.iter().map(|(key, _)| key.as_str()).collect();
+
+        attrs.iter().for_each(|&attr| match attr {
+            "src" | "alt" => {}
+            _ => el.remove_attribute(attr),
+        });
+
+        el.children().for_each(|_, el| {
+            clean_attrs(el);
+            true
+        });
+    }
     let mut html = html.to_string();
-
-    let script_re = Regex::new(SCRIPT_PATTERN).unwrap();
-    html = script_re.replace_all(&html, "").to_string();
-
-    let style_re = Regex::new(STYLE_PATTERN).unwrap();
-    html = style_re.replace_all(&html, "").to_string();
-
-    let meta_re = Regex::new(META_PATTERN).unwrap();
-    html = meta_re.replace_all(&html, "").to_string();
 
     let comment_re = Regex::new(COMMENT_PATTERN).unwrap();
     html = comment_re.replace_all(&html, "").to_string();
-
-    let link_re = Regex::new(LINK_PATTERN).unwrap();
-    html = link_re.replace_all(&html, "").to_string();
-
-    if clean_svg {
-        html = replace_svg(&html, "this is a placeholder");
-    }
 
     if clean_base64 {
         html = replace_base64_images(&html, "#");
     }
 
-    html
+    let root = visdom::Vis::load(html).unwrap();
+
+    if clean_svg {
+        root.find("svg").remove();
+    }
+
+    root.find("style,script,meta,link").remove();
+
+    root.children("*").for_each(|_, el| {
+        clean_attrs(el);
+        true
+    });
+
+    root.html()
 }
 
 #[pymodule]
