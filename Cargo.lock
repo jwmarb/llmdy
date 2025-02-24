@@ -1031,6 +1031,7 @@ dependencies = [
  "pyo3",
  "regex",
  "reqwest",
+ "url",
  "visdom",
 ]
 

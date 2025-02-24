@@ -1,8 +1,10 @@
 use pyo3::prelude::*;
 use regex::Regex;
+use url::Url;
 
 const COMMENT_PATTERN: &str = r"<[ ]*!--.*?--[ ]*>";
 const BASE64_IMG_PATTERN: &str = r#"<img[^>]+src="data:image/[^;]+;base64,[^"]+"[^>]*>"#;
+const URL_PATTERN: &str = r#"(https?:\/\/)|(data:)"#;
 
 fn replace_base64_images(html: &str, new_image_src: &str) -> String {
     let re = Regex::new(BASE64_IMG_PATTERN).unwrap();
@@ -21,19 +23,36 @@ fn get_html(url: &str) -> String {
 }
 
 #[pyfunction]
-#[pyo3(signature = (html = "", clean_svg = false, clean_base64 = false))]
-fn clean_html(html: &str, clean_svg: bool, clean_base64: bool) -> String {
-    fn clean_attrs(el: &mut visdom::types::BoxDynElement) -> () {
+#[pyo3(signature = (html = "", clean_svg = false, clean_base64 = false, base_url = ""))]
+fn clean_html(html: &str, clean_svg: bool, clean_base64: bool, base_url: &str) -> String {
+    fn clean_attrs(el: &mut visdom::types::BoxDynElement, base_url: &str) -> () {
         let binding = el.get_attributes();
         let attrs: Vec<&str> = binding.iter().map(|(key, _)| key.as_str()).collect();
 
         attrs.iter().for_each(|&attr| match attr {
-            "src" | "alt" | "srcset" => {}
+            "src" | "alt" | "srcset" => {
+                if attr == "src" || attr == "srcset" {
+                    let src: String = el.get_attribute(attr).unwrap().to_string();
+                    let url_regex = Regex::new(URL_PATTERN).unwrap();
+                    if url_regex.is_match(src.as_str()) {
+                        return;
+                    }
+
+                    let mut url =
+                        Url::parse(base_url).expect(format!("Invalid URL: {}", base_url).as_str());
+
+                    url.path_segments_mut()
+                        .expect("Failed to get path segments")
+                        .push(src.trim_start_matches('/'));
+
+                    el.set_attribute(attr, Option::from(url.as_str()));
+                }
+            }
             _ => el.remove_attribute(attr),
         });
 
         el.children().for_each(|_, el| {
-            clean_attrs(el);
+            clean_attrs(el, base_url);
             true
         });
     }
@@ -55,7 +74,7 @@ fn clean_html(html: &str, clean_svg: bool, clean_base64: bool) -> String {
     root.find("style,script,meta,link").remove();
 
     root.children("*").for_each(|_, el| {
-        clean_attrs(el);
+        clean_attrs(el, base_url);
         true
     });
 
