@@ -23,7 +23,7 @@ def clean_html(html: str, base_url: str, clean_svg=True, clean_base64=True):
     :param clean_base64: A boolean flag indicating whether to clean base64-encoded data. Defaults to True.
     :return: The sanitized HTML content as a string.
     """
-    return str(BeautifulSoup(sanitizer.clean_html(html.strip(), clean_svg, clean_base64, base_url))).strip()
+    return str(BeautifulSoup(sanitizer.clean_html(html.strip(), clean_svg, clean_base64, base_url), features="html.parser")).strip()
 
 
 def remove_md_block_response(generated: str, incomplete_md: str | None = None) -> str:
@@ -42,8 +42,8 @@ def remove_md_block_response(generated: str, incomplete_md: str | None = None) -
         content = content.strip()
         for header in MD_HEADERS:
             if content.startswith(header):
-                if content.count("```") & 1 != 0:
-                    return content[len(header) + 1:].strip()
+                # if content.count("```") & 1 != 0:
+                #     return content[len(header) + 1:].strip()
                 return content[len(header) + 1:-len(MD_CODE_TRAIL) - 1]
         return content
     if incomplete_md:
