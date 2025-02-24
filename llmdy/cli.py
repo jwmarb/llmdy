@@ -1,10 +1,11 @@
 import logging
-import os
 from typing import Any
 import openai
 from constants import OPENAI_API_KEY, OPENAI_BASE_URL, READERLM_MODEL, READERLM_PROMPT
 import argparse
 import pydantic
+from llmdy.cache import Cache
+from llmdy.recovery import Recovery
 import sanitize
 
 ###########################################
@@ -49,37 +50,30 @@ def main():
     args = Arguments.parse(parser.parse_args())
 
     html: str = sanitize.get_html(str(args.url))
-    cleaned_html = sanitize.clean_html(html, True, True)
+    cleaned_html = sanitize.clean_html(
+        html, f"{args.url.scheme}://{args.url.host}", True, True)
 
     if args.output_html:
         with open(f"{args.out}.html", "w+") as f:
             f.write(cleaned_html)
 
-    try:
-        with open(f"{args.out}.tmp", "r+") as f:
-            incomplete_md = f.read()
-    except FileNotFoundError:
-        incomplete_md = ""
+    cached = Cache.get(args.out)
+    if cached:
+        print(cached)
+        return
+
+    recovery = Recovery(key=args.out)
     prompt = READERLM_PROMPT.format(
-        html=cleaned_html, incomplete_md=incomplete_md)
-    response = client.completions.create(
+        html=cleaned_html, incomplete_md=recovery.recover())
+    response: openai.Stream[openai.types.Completion] = client.completions.create(
         model=READERLM_MODEL, prompt=prompt, stream=True, stop=["<|im_end|>"])
 
-    written = ""
-
-    with open(f"{args.out}.tmp", "a+") as f:
+    with recovery as r:
         for chunk in response:
             chunk = chunk.choices[0].text
             if chunk != None:
-                written += chunk
-                f.write(chunk)
-                print(written, end="")
-
-    with open(args.out, "w+") as f:
-        f.write(sanitize.remove_md_block_response(
-            written, incomplete_md=incomplete_md))
-
-    os.remove(f"{args.out}.tmp")
+                r.write(chunk)
+                print(chunk, end="")
 
     logging.info(f"Markdown file has been created successfully: {args.out}.")
 
