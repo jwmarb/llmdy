@@ -2,7 +2,7 @@ import os
 from typing import Literal
 import dotenv
 
-dotenv.load_dotenv(".env")
+dotenv.load_dotenv(os.getenv("ENV_PATH", ".env"))
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
