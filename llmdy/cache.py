@@ -41,6 +41,6 @@ class Cache:
             case 'memory':
                 return Cache.__memory__.get(key)
             case 'redis':
-                return client.get(key)
+                return client.get(key).decode('utf-8')
             case 'none':
                 return None

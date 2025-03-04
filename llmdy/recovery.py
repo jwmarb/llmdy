@@ -72,10 +72,10 @@ class Recovery:
         try:
             match RECOVERY_STRATEGY:
                 case 'disk':
-                    with open(f"{self._key}.tmp", "r+") as f:
+                    with open(f"{self._prog_key}.tmp", "r+") as f:
                         self._data = f.read()
                 case 'redis':
-                    self._data = client.get(self._key)
+                    self._data = client.get(self._prog_key).decode('utf-8')
                 case "none":
                     pass
             return self._data or ""
