@@ -44,7 +44,12 @@ def remove_md_block_response(generated: str, incomplete_md: str | None = None) -
             if content.startswith(header):
                 # if content.count("```") & 1 != 0:
                 #     return content[len(header) + 1:].strip()
-                return content[len(header) + 1:-len(MD_CODE_TRAIL) - 1]
+
+                content = content[content.index(
+                    header) + len(header) + 1:]
+
+                return content.rstrip(MD_CODE_TRAIL) if content.count(MD_CODE_TRAIL) & 1 == 1 else content
+
         return content
     if incomplete_md:
         extracted_incomplete_md = extract_html(incomplete_md)

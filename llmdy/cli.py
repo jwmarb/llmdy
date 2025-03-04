@@ -57,12 +57,12 @@ def main():
         with open(f"{args.out}.html", "w+") as f:
             f.write(cleaned_html)
 
-    cached = Cache.get(args.out)
+    cached = Cache.get(args.url)
     if cached:
         print(cached)
         return
 
-    recovery = Recovery(key=args.out)
+    recovery = Recovery(key=args.out, url=args.url)
     prompt = READERLM_PROMPT.format(
         html=cleaned_html, incomplete_md=recovery.recover())
     response: openai.Stream[openai.types.Completion] = client.completions.create(
@@ -70,7 +70,8 @@ def main():
 
     with recovery as r:
         for chunk in response:
-            chunk = chunk.choices[0].text
+            chunk = chunk.choices[0].delta["content"] if hasattr(
+                chunk.choices[0], 'delta') and chunk.choices[0].delta else chunk.choices[0].text
             if chunk != None:
                 r.write(chunk)
                 print(chunk, end="")

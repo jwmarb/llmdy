@@ -15,15 +15,16 @@ def __generate_key_prog__(key: str) -> str:
 
 
 class Recovery:
-    def __init__(self, key: str):
+    def __init__(self, key: str, url: str):
         self._data = ""
+        self._file_path = key
         match RECOVERY_STRATEGY:
             case 'disk':
                 self._key = key
                 self._prog_key = f"{key}.tmp"
             case _:
-                self._key = __generate_key__(key)
-                self._prog_key = __generate_key_prog__(key)
+                self._key = __generate_key__(url)
+                self._prog_key = __generate_key_prog__(url)
 
     def __enter__(self):
         self._data: str | None = "" if self._data == None else self._data
@@ -38,14 +39,15 @@ class Recovery:
             match RECOVERY_STRATEGY:
                 case 'disk':
                     self._file.close()
-                    with open(self._key, "w+") as f:
-                        f.write(finalized_md)
                     os.remove(self._prog_key)
                 case 'redis':
                     client.delete(self._prog_key)
                     Cache.insert(self._key, finalized_md)
                 case 'none':
                     pass
+
+            with open(self._file_path, "w+") as f:
+                f.write(finalized_md)
 
         self._data = None
 
@@ -76,6 +78,6 @@ class Recovery:
                     self._data = client.get(self._key)
                 case "none":
                     pass
-            return self._data
+            return self._data or ""
         except Exception as e:
             return ""
