@@ -1,3 +1,5 @@
-if __name__ == '__main__':
-    from cli import main
-    main()
+from . import cache
+from . import constants
+from . import recovery
+from . import sanitize
+from . import util

@@ -1,5 +1,5 @@
 from types import TracebackType
-from constants import RECOVERY_STRATEGY, CACHE_TTL
+from llmdy.constants import RECOVERY_STRATEGY, CACHE_TTL
 from llmdy.sanitize import remove_md_block_response
 from llmdy.util import client
 from llmdy.cache import Cache

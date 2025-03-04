@@ -56,4 +56,4 @@ def remove_md_block_response(generated: str, incomplete_md: str | None = None) -
         extracted_generated = extract_html(generated)
         return extracted_incomplete_md + extracted_generated
 
-    return extract_html(generated)
+    return extract_html(generated).strip()
