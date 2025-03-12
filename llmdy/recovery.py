@@ -1,7 +1,7 @@
 from types import TracebackType
+from typing import Callable
 from llmdy.constants import RECOVERY_STRATEGY, CACHE_TTL
-from llmdy.sanitize import remove_md_block_response
-from llmdy.util import client
+from llmdy.util import rediscli
 from llmdy.cache import Cache
 import os
 
@@ -15,9 +15,10 @@ def __generate_key_prog__(key: str) -> str:
 
 
 class Recovery:
-    def __init__(self, key: str, url: str):
+    def __init__(self, key: str, url: str, on_complete_write: Callable[[str], str] = (lambda x: x)):
         self._data = ""
         self._file_path = key
+        self._on_complete_write = on_complete_write
         match RECOVERY_STRATEGY:
             case 'disk':
                 self._key = key
@@ -30,18 +31,19 @@ class Recovery:
         self._data: str | None = "" if self._data == None else self._data
         self._file = open(
             self._prog_key, "a+") if RECOVERY_STRATEGY == 'disk' else None
+
         return self
 
     def __exit__(self, exc_type: type[BaseException] | None, exc_value: BaseException | None, traceback: TracebackType | None):
         if exc_value is None:
-            finalized_md = remove_md_block_response(self._data)
+            finalized_md = self._on_complete_write(self._data)
 
             match RECOVERY_STRATEGY:
                 case 'disk':
                     self._file.close()
                     os.remove(self._prog_key)
                 case 'redis':
-                    client.delete(self._prog_key)
+                    rediscli.delete(self._prog_key)
                     Cache.insert(self._key, finalized_md)
                 case 'none':
                     pass
@@ -61,7 +63,7 @@ class Recovery:
             case 'disk':
                 self._file.write(data)
             case 'redis':
-                client.setex(self._prog_key, CACHE_TTL, self._data)
+                rediscli.setex(self._prog_key, CACHE_TTL, self._data)
             case "none":
                 pass
 
@@ -75,7 +77,7 @@ class Recovery:
                     with open(f"{self._prog_key}.tmp", "r+") as f:
                         self._data = f.read()
                 case 'redis':
-                    self._data = client.get(self._prog_key).decode('utf-8')
+                    self._data = rediscli.get(self._prog_key).decode('utf-8')
                 case "none":
                     pass
             return self._data or ""
