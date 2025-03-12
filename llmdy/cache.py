@@ -1,5 +1,5 @@
 from llmdy.constants import CACHE_STRATEGY, CACHE_TTL
-from llmdy.util import client
+from llmdy.util import rediscli
 from cachetools import TTLCache
 
 
@@ -24,7 +24,7 @@ class Cache:
             case 'memory':
                 Cache.__memory__[key] = value
             case 'redis':
-                client.setex(key, CACHE_TTL, value)
+                rediscli.setex(key, CACHE_TTL, value)
             case 'none':
                 pass
 
@@ -41,6 +41,7 @@ class Cache:
             case 'memory':
                 return Cache.__memory__.get(key)
             case 'redis':
-                return client.get(key).decode('utf-8')
+                value = rediscli.get(key)
+                return value.decode('utf-8') if value else None
             case 'none':
                 return None
