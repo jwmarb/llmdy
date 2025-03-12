@@ -16,6 +16,18 @@ if OPENAI_BASE_URL is None:
     raise ValueError(
         "OPENAI_BASE_URL must be set in the environment variables")
 
+WHISPER_MODEL = os.getenv("WHISPER_MODEL", "whisper-1")
+
+WHISPER_BASE_URL = os.getenv("WHISPER_BASE_URL") or OPENAI_BASE_URL
+
+WHISPER_API_KEY = os.getenv("WHISPER_API_KEY") or OPENAI_API_KEY
+
+AGENT_MODEL = os.getenv("AGENT_MODEL", "gpt-4o-mini")
+
+AGENT_BASE_URL = os.getenv("AGENT_BASE_URL") or OPENAI_BASE_URL
+
+AGENT_API_KEY = os.getenv("AGENT_API_KEY") or OPENAI_API_KEY
+
 READERLM_MODEL = os.getenv("READERLM_MODEL")
 
 if READERLM_MODEL is None:
