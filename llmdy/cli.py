@@ -4,6 +4,7 @@ import openai
 from constants import READERLM_MODEL, READERLM_PROMPT
 import argparse
 import pydantic
+from llmdy.types import YTInfo
 from llmdy.util import readerlm
 from llmdy.agents.audio_extractor import AudioExtractor
 from llmdy.agents.transcript2md import Transcript2Markdown
@@ -80,7 +81,7 @@ def handle_youtube(args: Arguments):
             file_name = d["filename"]
 
     with yt_dlp.YoutubeDL({"progress_hooks": [on_finished], "outtmpl": f"{file_name}.%(ext)s", "extract_audio": True, "format": "bestaudio/best"}) as yt:
-        info = yt.extract_info(url, download=False)
+        info: YTInfo = yt.extract_info(url, download=False)
         yt.download(url)
 
     audio_extractor = AudioExtractor(info, file_name)

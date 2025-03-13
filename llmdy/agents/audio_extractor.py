@@ -1,6 +1,7 @@
 from llmdy.cache import Cache
 from llmdy.constants import WHISPER_MODEL
 from llmdy.util import whisper
+from llmdy.types import YTInfo
 
 
 class AudioExtractor:
@@ -9,7 +10,7 @@ class AudioExtractor:
 Author: {uploader}
 Task: You are extracting speech from a transcript. Ignore audio that isn't speech."""
 
-    def __init__(self, info: dict[str, any], file_name: str):
+    def __init__(self, info: YTInfo, file_name: str):
         self._info = info
         self._file_name = file_name
         self._prompt = AudioExtractor.__prompt__.format(
