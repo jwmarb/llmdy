@@ -1,3 +1,4 @@
+from mock import MagicMock
 import pytest
 import llmdy
 
@@ -32,6 +33,14 @@ _html = """<!DOCTYPE html>
     </code></pre>
   </body>
 </html>"""
+
+
+def test_get_html():
+    llmdy.sanitize.sanitizer.get_html = MagicMock()
+    llmdy.sanitize.sanitizer.get_html.return_value = "example"
+
+    result = llmdy.sanitize.get_html("https://example.com/")
+    assert result == "example"
 
 
 def test_sanitize_md_removes_useless_tags():
@@ -162,4 +171,74 @@ def test_remove_md_block_response_with_leading_and_trailing_blocks():
     ``` again
     ```python
     print("Hi")
+    ```"""
+
+
+def test_remove_md_block_response_invalid_md():
+    generated = """Hello
+    ```js
+    console.log('hi');
+    ``` again
+    ```python
+    print("Hi")
+    ```"""
+
+    assert llmdy.sanitize.remove_md_block_response(generated) == """Hello
+    ```js
+    console.log('hi');
+    ``` again
+    ```python
+    print("Hi")
+    ```"""
+
+
+def test_remove_md_block_response_with_incomplete_response():
+    # This is for a transcription that has been resumed.
+    incomplete_md = """```md
+    
+    # Hello"""
+
+    assert llmdy.sanitize.remove_md_block_response(generated=""" world
+
+    some description here
+                                                   
+    ```""", incomplete_md=incomplete_md) == """# Hello world
+
+    some description here"""
+
+
+def test_remove_md_block_response_with_incomplete_response_invalid_close():
+    # This transcription has a ```md but no closing ``` for it
+    # Additional markdown block to check if it will not break it.
+    incomplete_md = """```md
+    
+    # Hello"""
+
+    assert llmdy.sanitize.remove_md_block_response(generated=""" world
+
+    ```md
+    ## Some more markdown in this block
+    ```""", incomplete_md=incomplete_md) == """# Hello world
+
+    ```md
+    ## Some more markdown in this block
+    ```"""
+
+
+def test_remove_md_block_response_with_incomplete_response_invalid_opening():
+    # This transcription does NOT start with a ```md but has a closing ``` for it
+    # Additional markdown block to check if it will not break it.
+    incomplete_md = """
+    
+    # Hello"""
+
+    assert llmdy.sanitize.remove_md_block_response(generated=""" world
+
+    ```md
+    ## Some more markdown in this block
+    ```
+                                                   ```""", incomplete_md=incomplete_md) == """# Hello world
+
+    ```md
+    ## Some more markdown in this block
     ```"""
