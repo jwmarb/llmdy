@@ -30,6 +30,8 @@ llmdy 📄🔍
 
 - **ReaderLM v2**: Trained by [Jina AI](https://jina.ai/), **ReaderLM v2** is what powers llmdy since it is a finetune model specifically designed for HTML-to-Markdown conversion. [The model card can be found here](https://huggingface.co/jinaai/ReaderLM-v2). You will need to configure an OpenAI-compatible endpoint to access this model. This section will cover it.
 
+- **Makefile**: For quickly executing commands in this project; otherwise, you can just copy and paste the contents into your shell, if you know what you are doing.
+
 1. **Clone the repository:** Open your terminal, and run the following command to clone the repository:
 
 ```sh
@@ -39,7 +41,7 @@ git clone https://github.com/jwmarb/llmdy.git
 2. **Install the dependencnies**: Navigate to the cloned repository via `cd llmdy`, and run the following command to setup your environment:
 
 ```sh
-chmod a+x ./setup.sh && ./setup.sh
+make setup
 ```
 
 This will install all the necessary packages and compiled code from the Rust code.
@@ -89,7 +91,7 @@ RECOVERY_STRATEGY=disk
 5. **Run llmdy**: With everything setup, (hopefully) you can run llmdy. Run the following:
 
 ```sh
-chmod a+x ./llmdy.sh && ./llmdy.sh
+./llmdy.sh
 ```
 
 If it works, you should see `llmdy: error: the following arguments are required: url`.
