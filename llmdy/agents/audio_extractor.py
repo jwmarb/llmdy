@@ -1,7 +1,7 @@
 from llmdy.cache import Cache
 from llmdy.constants import WHISPER_MODEL
 from llmdy.util import whisper
-from llmdy.types import YTInfo
+from llmdy.types import WhisperTranscription, YTInfo
 
 
 class AudioExtractor:
@@ -22,7 +22,7 @@ Task: You are extracting speech from a transcript. Ignore audio that isn't speec
             return cached
 
         with open(self._file_name, "rb") as audio_file:
-            transcription = whisper.audio.transcriptions.create(
+            transcription: WhisperTranscription = whisper.audio.transcriptions.create(
                 file=audio_file, prompt=self._prompt, model=WHISPER_MODEL)
 
         if self._info["chapters"]:
