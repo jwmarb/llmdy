@@ -71,6 +71,9 @@ class Recovery:
             case "none":
                 pass
 
+    def get_finalized_data(self) -> str:
+        return self._on_complete_write(self._data)
+
     def recover(self):
         """
         Attempts to recover data from previous process. If there isn't any, a blank string is returned.
