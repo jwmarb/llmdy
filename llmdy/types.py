@@ -21,3 +21,4 @@ class WhisperTranscriptionSegment(TypedDict):
 
 class WhisperTranscription:
     segments: list[WhisperTranscriptionSegment]
+    text: str
