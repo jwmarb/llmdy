@@ -53,7 +53,8 @@ def remove_md_block_response(generated: str, incomplete_md: str | None = None) -
         return content
     if incomplete_md:
         extracted_incomplete_md = extract_html(incomplete_md)
-        extracted_generated = extract_html(generated)
-        return extracted_incomplete_md + extracted_generated
+        extracted_generated = generated.rstrip(MD_CODE_TRAIL) if generated.count(
+            MD_CODE_TRAIL) & 1 == 1 else generated
+        return (extracted_incomplete_md + extracted_generated).strip()
 
     return extract_html(generated).strip()
