@@ -2,7 +2,6 @@ from types import TracebackType
 from typing import Callable
 from llmdy.constants import RECOVERY_STRATEGY, CACHE_TTL
 from llmdy.util import rediscli
-from llmdy.cache import Cache
 import os
 
 
@@ -47,7 +46,7 @@ class Recovery:
                         pass
                 case 'redis':
                     rediscli.delete(self._prog_key)
-                    Cache.insert(self._key, finalized_md)
+                    rediscli.setex(self._key, CACHE_TTL, finalized_md)
                 case 'none':
                     pass
 
