@@ -41,7 +41,10 @@ class Recovery:
             match RECOVERY_STRATEGY:
                 case 'disk':
                     self._file.close()
-                    os.remove(self._prog_key)
+                    try:
+                        os.remove(self._prog_key)
+                    except FileNotFoundError as e:
+                        pass
                 case 'redis':
                     rediscli.delete(self._prog_key)
                     Cache.insert(self._key, finalized_md)
@@ -50,7 +53,9 @@ class Recovery:
 
             with open(self._file_path, "w+") as f:
                 f.write(finalized_md)
-
+        else:
+            if RECOVERY_STRATEGY == 'disk':
+                self._file.close()
         self._data = None
 
     def write(self, data: str):
@@ -74,7 +79,7 @@ class Recovery:
         try:
             match RECOVERY_STRATEGY:
                 case 'disk':
-                    with open(f"{self._prog_key}.tmp", "r+") as f:
+                    with open(self._prog_key, "r+") as f:
                         self._data = f.read()
                 case 'redis':
                     self._data = rediscli.get(self._prog_key).decode('utf-8')
