@@ -3,7 +3,7 @@ from typing import Literal
 import dotenv
 import redis
 
-dotenv.load_dotenv(dotenv_path=os.getenv("ENV_PATH", ".env"), override=True)
+dotenv.load_dotenv(dotenv_path=os.getenv("ENV_PATH", ".env"), override=False)
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
