@@ -2,11 +2,12 @@ import openai
 
 from llmdy.constants import AGENT_MODEL
 from llmdy.recovery import Recovery
+from llmdy.types import YTInfo
 from llmdy.util import agent
 
 
 class Transcript2Markdown:
-    __namespace__ = "transcript2md/"
+    __namespace__ = "transcript2md"
     __system_prompt__ = r"""**Task:** Organize and restructure the provided transcript (wrapped in <|begin_bad_markdown|> tags) into a clean, logical Markdown format. Use the rules below to guide your formatting. Additional context for the transcript is provided in <|begin_context|> tags.  
 
 **Rules to Follow:**  
@@ -38,7 +39,7 @@ Your response should ONLY contain the reformatted Markdown within:
 
     __prompt__ = """<|begin_context|><title>{title}</title><uploader>{uploader}</uploader><description>{description}</description><|end_context|><|begin_bad_markdown|>{incomplete_transcript_md}<|end_bad_markdown|>"""
 
-    def __init__(self, incomplete_transcript_md: str, info: dict[str, any], file_name: str):
+    def __init__(self, incomplete_transcript_md: str, info: YTInfo, file_name: str):
         self._info = info
         self._file_name = file_name
         self._prompt = Transcript2Markdown.__prompt__.format(
@@ -47,7 +48,7 @@ Your response should ONLY contain the reformatted Markdown within:
     def __str__(self):
         return f"{Transcript2Markdown.__namespace__}/{self._file_name}"
 
-    def convert(self) -> str:
+    def convert(self):
         recovery = Recovery(
             f"{self._info['fulltitle']} - {self._info['uploader']}.md", self._file_name, on_complete_write=(lambda x: x[x.index('<|begin_output|>') + len('<|begin_output|>'):]))
         completion = agent.completions.create(
@@ -60,3 +61,5 @@ Your response should ONLY contain the reformatted Markdown within:
                 if chunk != None:
                     r.write(chunk)
                     print(chunk, end="")
+
+            return r.get_finalized_data()

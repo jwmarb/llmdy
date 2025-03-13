@@ -11,6 +11,7 @@ class YTInfo(TypedDict):
     chapters: list[YTChapter]
     fulltitle: str
     uploader: str
+    description: str
 
 
 class WhisperTranscriptionSegment(TypedDict):
