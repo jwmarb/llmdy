@@ -24,9 +24,10 @@ class Arguments(pydantic.BaseModel):
     url: pydantic.HttpUrl
     out: str
     output_html: bool
+    skip_md_conversion: bool
 
     def parse(args: Any):
-        return Arguments(url=args.url, out=args.out, output_html=args.output_html)
+        return Arguments(url=args.url, out=args.out, output_html=args.output_html, skip_md_conversion=args.skip_md_conversion)
 
 ###########################################
 # HANDLERS
@@ -86,9 +87,13 @@ def handle_youtube(args: Arguments):
 
     audio_extractor = AudioExtractor(info, file_name)
     incomplete_transcript = audio_extractor.extract_audio()
-    transcript2md = Transcript2Markdown(
-        incomplete_transcript_md=incomplete_transcript, info=info, file_name=file_name)
-    transcript2md.convert()
+    if not args.skip_md_conversion:
+        transcript2md = Transcript2Markdown(
+            incomplete_transcript_md=incomplete_transcript, info=info, file_name=file_name)
+        transcript2md.convert()
+    else:
+        with open(args.out, "w+") as f:
+            f.write(incomplete_transcript)
 
     # Cache.insert(url, transcription)
     # print(transcription.text)
@@ -110,6 +115,9 @@ def main():
     )
     parser.add_argument(
         "--output-html", help="Outputs the parsed HTML, if applicable", required=False, default=False
+    )
+    parser.add_argument(
+        "--skip-md-conversion", help="(YOUTUBE ONLY) Skips conversion of transcript to a readable markdown format", required=False, default=False
     )
     args = Arguments.parse(parser.parse_args())
 
