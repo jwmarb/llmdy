@@ -2,7 +2,7 @@ import openai
 
 from llmdy.constants import AGENT_MODEL
 from llmdy.recovery import Recovery
-from llmdy.types import YTInfo
+from llmdy.llmdy_types import YTInfo
 from llmdy.util import agent
 
 
@@ -60,6 +60,5 @@ Your response should ONLY contain the reformatted Markdown within:
                     chunk.choices[0], 'delta') and chunk.choices[0].delta else chunk.choices[0].text
                 if chunk != None:
                     r.write(chunk)
-                    print(chunk, end="")
 
             return r.get_finalized_data()

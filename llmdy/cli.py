@@ -4,7 +4,7 @@ import openai
 from constants import READERLM_MODEL, READERLM_PROMPT
 import argparse
 import pydantic
-from llmdy.types import YTInfo
+from llmdy.llmdy_types import YTInfo
 from llmdy.util import readerlm
 from llmdy.agents.audio_extractor import AudioExtractor
 from llmdy.agents.transcript2md import Transcript2Markdown

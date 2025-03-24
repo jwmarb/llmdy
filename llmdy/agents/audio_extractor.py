@@ -1,7 +1,7 @@
 from llmdy.cache import Cache
 from llmdy.constants import WHISPER_MODEL
 from llmdy.util import whisper
-from llmdy.types import WhisperTranscription, YTInfo
+from llmdy.llmdy_types import WhisperTranscription, YTInfo
 
 
 class AudioExtractor:

@@ -1,7 +1,7 @@
 from mock import patch, mock_open, Mock, MagicMock
 import pytest
 import llmdy
-from llmdy.types import WhisperTranscription, YTInfo
+from llmdy.llmdy_types import WhisperTranscription, YTInfo
 
 
 @pytest.fixture(autouse=True)

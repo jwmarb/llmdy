@@ -1,4 +1,5 @@
 import os
+import sys
 from typing import Literal
 import dotenv
 import redis
@@ -46,7 +47,7 @@ if CACHE_TTL < 0:
 
 REDIS_URI = os.getenv("REDIS_URI", "redis://localhost:6379/0")
 
-if REDIS_URI != None:
+if REDIS_URI != None and "pytest" not in sys.modules:
     response = redis.Redis.from_url(REDIS_URI).ping()
     if response == False:
         raise ValueError(
